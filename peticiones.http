@@ -1,0 +1,12 @@
+### 1. CREAR USUARIO (POST)
+POST http://localhost:3000/usuarios
+Content-Type: application/json
+
+{
+    "cedula": "2222222222",
+    "nombre": "Sofia Prueba",
+    "clave": "clave_segura_2"
+}
+
+### 2. CONSULTAR TODOS LOS USUARIOS (GET)
+GET http://localhost:3000/usuarios
