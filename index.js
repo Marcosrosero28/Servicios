@@ -216,6 +216,22 @@ app.put("/asignaturas/:codigo", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+// 5. ELIMINAR ASIGNATURA (DELETE /asignaturas/:codigo)
+app.delete("/asignaturas/:codigo", async (req, res) => {
+  try {
+    const { codigo } = req.params;
+    const result = await pool.query("DELETE FROM Asignatura_Materia WHERE codigo = $1 RETURNING *", [codigo]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ msg: "Asignatura no encontrada" });
+    }
+
+    res.json({ msg: "Asignatura eliminada", data: result.rows[0] });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 // ------------------------
 // SERVIDOR
 // ------------------------
