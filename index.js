@@ -187,7 +187,35 @@ app.get("/asignaturas/:codigo", async (req, res) => {
     }
 });
 
+// 4. EDITAR ASIGNATURA (PUT /asignaturas/:codigo)
+app.put("/asignaturas/:codigo", async (req, res) => {
+  try {
+    const { codigo } = req.params;
+    const { nombre_materia } = req.body;
 
+    if (!nombre_materia) {
+        return res.status(400).json({ msg: "Se requiere 'nombre_materia' para actualizar." });
+    }
+
+    const query = `
+        UPDATE Asignatura_Materia
+        SET nombre_materia = $1
+        WHERE codigo = $2
+        RETURNING *;
+    `;
+
+    const result = await pool.query(query, [nombre_materia, codigo]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ msg: "Asignatura no encontrada" });
+    }
+
+    res.json({ msg: "Asignatura actualizada correctamente", data: result.rows[0] });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 // ------------------------
 // SERVIDOR
 // ------------------------

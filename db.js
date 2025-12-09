@@ -1,12 +1,17 @@
 import pkg from 'pg';
+import dotenv from 'dotenv'; // 1. Importar dotenv
+
+dotenv.config(); // 2. Cargar las variables del archivo .env
+
 const { Pool } = pkg;
 
 export const pool = new Pool({
-  user: "postgres",       // ⚠️ Reemplaza con tu usuario de PostgreSQL
-  host: "localhost",
-  database: "BasedatosMarcos",   // ⚠️ Reemplaza con el nombre de tu base de datos
-  password: "RamonAyala12",   // ⚠️ Reemplaza con tu contraseña
-  port: 5433,
+  // 3. Usar process.env para acceder a las variables
+  user: process.env.DB_USER,      
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
 });
 
-console.log("Conexión a PostgreSQL establecida.");
+console.log(`Conectando a la base de datos ${process.env.DB_NAME} en ${process.env.DB_HOST}...`);
