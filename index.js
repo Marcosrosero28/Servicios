@@ -287,5 +287,26 @@ app.get("/notas/estudiante/:id", async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+// AGREGAR ESTO EN TU BACKEND (index.js)
+
+// CONSULTAR TODAS LAS NOTAS (Para la tabla del dashboard)
+// --- ESTO ES LO QUE TE FALTA ---
+
+// CONSULTAR TODAS LAS NOTAS (Para llenar la tabla del historial)
+app.get("/notas", async (req, res) => {
+    try {
+        const query = `
+            SELECT n.id, u.nombre as estudiante, m.nombre_materia, n.valor, n.fecha
+            FROM Notas n
+            JOIN Usuarios u ON n.usuario_id = u.id
+            JOIN Asignatura_Materia m ON n.asignatura_codigo = m.codigo
+            ORDER BY n.id DESC;
+        `;
+        const result = await pool.query(query);
+        res.json({ data: result.rows });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
