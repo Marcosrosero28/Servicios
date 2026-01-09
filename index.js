@@ -17,24 +17,32 @@ app.get("/", (req, res) => {
 // ==========================================================
 
 // 1. CREAR USUARIO (POST /usuarios)
+// 1. CREAR USUARIO (POST /usuarios) - ACTUALIZADO CON ROL
 app.post("/usuarios", async (req, res) => {
   try {
-    const { cedula, nombre, clave } = req.body;
+    // AHORA RECIBIMOS TAMBIÉN EL ROL
+    const { cedula, nombre, clave, rol } = req.body;
+    
     if (!cedula || !nombre || !clave) {
       return res.status(400).json({ msg: "Faltan campos obligatorios (cedula, nombre, clave)" });
     }
 
+    // SI NO ENVÍAN ROL, ASUMIMOS QUE ES "ESTUDIANTE"
+    const rolFinal = rol || 'estudiante';
+
+    // LA CONSULTA SQL AHORA INCLUYE LA COLUMNA 'rol'
     const query = `
-      INSERT INTO Usuarios (cedula, nombre, clave)
-      VALUES ($1, $2, $3)
-      RETURNING id, cedula, nombre;
+      INSERT INTO Usuarios (cedula, nombre, clave, rol)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, cedula, nombre, rol;
     `;
 
-    const result = await pool.query(query, [cedula, nombre, clave]);
+    // PASAMOS 4 PARÁMETROS EN VEZ DE 3
+    const result = await pool.query(query, [cedula, nombre, clave, rolFinal]);
     res.status(201).json({ msg: "Usuario registrado exitosamente", data: result.rows[0] });
 
   } catch (error) {
-    if (error.code === '23505') { // Código de error de PostgreSQL para violación de UNIQUE
+    if (error.code === '23505') { 
         return res.status(409).json({ error: "La cédula ya está registrada." });
     }
     res.status(500).json({ error: error.message });
@@ -235,5 +243,49 @@ app.delete("/asignaturas/:codigo", async (req, res) => {
 // ------------------------
 // SERVIDOR
 // ------------------------
+// ==========================================================
+// RUTAS PARA LA TABLA NOTAS
+// ==========================================================
+
+// 1. REGISTRAR UNA NOTA (Solo un docente debería poder hacer esto, teóricamente)
+app.post("/notas", async (req, res) => {
+    try {
+        const { usuario_id, asignatura_codigo, valor } = req.body;
+
+        if (!usuario_id || !asignatura_codigo || valor === undefined) {
+            return res.status(400).json({ msg: "Faltan datos (usuario_id, asignatura_codigo, valor)" });
+        }
+
+        const query = `
+            INSERT INTO Notas (usuario_id, asignatura_codigo, valor)
+            VALUES ($1, $2, $3)
+            RETURNING *;
+        `;
+
+        const result = await pool.query(query, [usuario_id, asignatura_codigo, valor]);
+        res.status(201).json({ msg: "Nota registrada", data: result.rows[0] });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 2. VER NOTAS DE UN ESTUDIANTE (JOIN para ver nombres reales)
+app.get("/notas/estudiante/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const query = `
+            SELECT n.id, u.nombre as estudiante, m.nombre_materia, n.valor, n.fecha
+            FROM Notas n
+            JOIN Usuarios u ON n.usuario_id = u.id
+            JOIN Asignatura_Materia m ON n.asignatura_codigo = m.codigo
+            WHERE u.id = $1;
+        `;
+        const result = await pool.query(query, [id]);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
