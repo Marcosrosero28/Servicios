@@ -1,22 +1,24 @@
 /* src/App.css */
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #f4f6f9; /* Color gris claro de fondo como en tu foto */
-  overflow-x: hidden;
-}
-
-.sidebar {
-  min-width: 250px;
-  max-width: 250px;
-  min-height: 100vh;
-}
-
-.main-content {
+/* Esto asegura que la pantalla ocupe todo el alto */
+#root {
   width: 100%;
 }
 
-.nav-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
+body {
+  margin: 0;
+  background-color: #f4f6f9;
+  overflow-x: hidden;
+}
+
+/* La barra lateral negra */
+.sidebar {
+  min-width: 250px;
+  max-width: 250px;
+  min-height: 100vh; /* Altura completa de la pantalla */
+}
+
+/* El contenido blanco de la derecha */
+.main-content {
+  flex-grow: 1; /* Ocupa todo el espacio restante */
+  width: 100%;
 }
